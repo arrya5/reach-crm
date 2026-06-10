@@ -1,0 +1,46 @@
+# Local one-command stack: Postgres + CRM + channel service.
+# (The frontend runs separately via `npm run dev` in web/.)
+#
+#   docker compose up --build
+#   # then seed once:  docker compose exec crm python -m app.seed
+#
+# For zero-Docker local dev you can instead run each service with uvicorn and
+# the default SQLite DB — see the README.
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: reach
+      POSTGRES_PASSWORD: reach
+      POSTGRES_DB: reach
+    ports: ["5432:5432"]
+    volumes: ["pgdata:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U reach"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  crm:
+    build: ./crm
+    depends_on:
+      db: { condition: service_healthy }
+    environment:
+      DATABASE_URL: postgresql+asyncpg://reach:reach@db:5432/reach
+      CHANNEL_SERVICE_URL: http://channel:8001
+      CRM_PUBLIC_URL: http://crm:8000
+      WEBHOOK_SECRET: dev-shared-secret-change-me
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: gemini-2.5-flash
+      CORS_ORIGINS: "*"
+    ports: ["8000:8000"]
+
+  channel:
+    build: ./channel-service
+    environment:
+      WEBHOOK_SECRET: dev-shared-secret-change-me
+      WORKER_COUNT: "4"
+    ports: ["8001:8001"]
+
+volumes:
+  pgdata:

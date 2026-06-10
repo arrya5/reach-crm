@@ -1,0 +1,48 @@
+# Render Blueprint — one-click deploy of the two backend services + Postgres.
+# (Deploy the frontend separately on Vercel; point VITE_API_BASE at the CRM URL.)
+#
+# After first deploy, run the seed once from the CRM service shell:
+#   python -m app.seed
+databases:
+  - name: reach-db
+    plan: free
+    databaseName: reach
+    user: reach
+
+services:
+  - type: web
+    name: reach-channel
+    runtime: docker
+    rootDir: channel-service
+    plan: free
+    envVars:
+      - key: WEBHOOK_SECRET
+        sync: false            # set the same value on both services
+      - key: WORKER_COUNT
+        value: "4"
+
+  - type: web
+    name: reach-crm
+    runtime: docker
+    rootDir: crm
+    plan: free
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: reach-db
+          property: connectionString
+      # Set these to the full public https URLs after the first deploy, e.g.
+      #   CHANNEL_SERVICE_URL = https://reach-channel.onrender.com
+      #   CRM_PUBLIC_URL      = https://reach-crm.onrender.com
+      - key: CHANNEL_SERVICE_URL
+        sync: false
+      - key: CRM_PUBLIC_URL
+        sync: false
+      - key: WEBHOOK_SECRET
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-2.5-flash
+      - key: CORS_ORIGINS
+        value: "*"

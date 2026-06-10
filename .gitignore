@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.pytest_cache/
+*.db
+*.sqlite3
+
+# Node / frontend
+node_modules/
+web/dist/
+web/.vite/
+*.local
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Build
+dist/
+build/
+
+# Local screenshot scratch (kept copies live in docs/screenshots/)
+_shots/
