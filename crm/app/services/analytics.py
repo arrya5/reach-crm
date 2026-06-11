@@ -53,6 +53,8 @@ async def campaign_stats(session: AsyncSession, campaign_id: int) -> dict | None
         "campaign_name": campaign.name,
         "channel": campaign.channel,
         "status": campaign.status,
+        "goal_text": campaign.goal_text,
+        "message_template": campaign.message_template,
         "funnel": {
             "audience": total,
             "sent": sent,

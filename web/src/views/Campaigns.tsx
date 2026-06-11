@@ -94,6 +94,13 @@ function CampaignDetail({ id, onBack }: { id: number; onBack: () => void }) {
         <Kpi v={`₹${stats.attributed_revenue.toLocaleString()}`} l="Attributed revenue" />
       </div>
 
+      <div className="card" style={{ marginBottom: 16 }}>
+        <h4 className="muted" style={{ marginTop: 0 }}>Campaign the AI designed</h4>
+        {stats.goal_text && <div className="muted" style={{ marginBottom: 8 }}>🎯 Goal: {stats.goal_text}</div>}
+        <div className="muted">Channel: <span className="badge b-queued">{stats.channel}</span></div>
+        <div className="preview-msg" style={{ marginTop: 10 }}>{stats.message_template}</div>
+      </div>
+
       <div className="grid-2">
         <div className="card">
           <h4 className="muted" style={{ marginTop: 0 }}>Delivery & engagement funnel</h4>

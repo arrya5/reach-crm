@@ -28,6 +28,7 @@ export interface Funnel {
 }
 export interface CampaignStats {
   campaign_id: number; campaign_name: string; channel: string; status: string;
+  goal_text: string; message_template: string;
   funnel: Funnel;
   rates: { delivery_rate: number; open_rate: number; click_rate: number; conversion_rate: number };
   attributed_revenue: number;

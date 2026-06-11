@@ -130,6 +130,10 @@ async def execute_tool(session: AsyncSession, name: str, args: dict) -> dict:
             await session.refresh(camp)
             return {
                 "campaign_id": camp.id, "status": "draft",
+                "name": camp.name,
+                "channel": camp.channel,
+                "message_template": camp.message_template,
+                "audience": seg.name,
                 "estimated_recipients": seg.est_count,
                 "note": "Staged as DRAFT. The marketer must click 'Approve & Launch' to send.",
             }

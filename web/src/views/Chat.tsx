@@ -162,8 +162,15 @@ function StagedCampaign({ result, onOpenCampaign }: { result: any; onOpenCampaig
   return (
     <div className="artifact">
       <h4>Campaign staged · draft</h4>
-      <div className="big">≈ {result.estimated_recipients?.toLocaleString()} recipients</div>
-      <div className="muted" style={{ marginTop: 4 }}>Campaign #{result.campaign_id} · awaiting your approval</div>
+      <div className="big">{result.name ?? "New campaign"}</div>
+      <div className="muted" style={{ marginTop: 6 }}>
+        <span className="badge b-queued" style={{ marginRight: 8 }}>{result.channel}</span>
+        ≈ {result.estimated_recipients?.toLocaleString()} recipients
+        {result.audience ? ` · ${result.audience}` : ""}
+      </div>
+      {result.message_template && (
+        <div className="preview-msg">{result.message_template}</div>
+      )}
       <div className="row-between" style={{ marginTop: 14 }}>
         <button className="btn" onClick={approve} disabled={busy || launched}>
           {launched ? "✓ Launched" : busy ? "Launching…" : "Approve & Launch"}
