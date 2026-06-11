@@ -17,8 +17,9 @@ Easiest path uses the included [`render.yaml`](render.yaml) blueprint:
    (and a Postgres if you didn't make one on Neon).
 3. Set env vars when prompted:
    - **Both services:** `WEBHOOK_SECRET` = your shared secret.
-   - **reach-crm:** `DATABASE_URL` (Neon string, or auto-wired if using Render's DB),
-     `GEMINI_API_KEY` (from https://aistudio.google.com/apikey).
+   - **reach-crm:** `DATABASE_URL` (Neon string, or auto-wired if using Render's DB), and an
+     LLM provider + key: `LLM_PROVIDER=groq` + `GROQ_API_KEY` (free at
+     https://console.groq.com/keys), **or** `LLM_PROVIDER=gemini` + `GEMINI_API_KEY`.
 4. After both are live, set on **reach-crm** and redeploy:
    - `CHANNEL_SERVICE_URL = https://reach-channel.onrender.com`
    - `CRM_PUBLIC_URL      = https://reach-crm.onrender.com`

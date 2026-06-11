@@ -23,10 +23,14 @@ from .provider import ToolSpec
 
 _FILTER_HINT = (
     "A JSON object: {\"match\": \"all|any\", \"conditions\": [{\"field\", \"op\", \"value\"}]}. "
-    "Fields: city, gender, signup_days_ago, last_order_days_ago, first_order_days_ago, "
-    "total_spend, order_count, avg_order_value, category, product. "
-    "Ops: gt, gte, lt, lte, eq, in, contains. "
-    "Categories: lipstick, foundation, skincare, eyes, nails, fragrance."
+    "Pick the operator that matches the field:\n"
+    "- category: use 'eq' (one) or 'in' (list). Values: lipstick, foundation, skincare, eyes, nails, fragrance.\n"
+    "- city: 'eq' or 'in'.  gender: 'eq' or 'in' (female/male/other).\n"
+    "- product: 'contains' (free-text product-name match).\n"
+    "- numeric fields use gt/gte/lt/lte/eq with a NUMBER (not a string): "
+    "signup_days_ago, last_order_days_ago, first_order_days_ago, total_spend, order_count, avg_order_value.\n"
+    "Example: {\"match\":\"all\",\"conditions\":[{\"field\":\"category\",\"op\":\"in\",\"value\":[\"lipstick\"]},"
+    "{\"field\":\"last_order_days_ago\",\"op\":\"gt\",\"value\":60}]}"
 )
 
 TOOL_SPECS = [

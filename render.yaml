@@ -40,9 +40,13 @@ services:
         sync: false
       - key: WEBHOOK_SECRET
         sync: false
+      # LLM provider: "groq" (used in the live demo) or "gemini". Set the
+      # matching API key below.
+      - key: LLM_PROVIDER
+        value: groq
+      - key: GROQ_API_KEY
+        sync: false
       - key: GEMINI_API_KEY
         sync: false
-      - key: GEMINI_MODEL
-        value: gemini-2.5-flash
       - key: CORS_ORIGINS
         value: "*"

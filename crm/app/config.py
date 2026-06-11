@@ -30,9 +30,20 @@ class Settings(BaseSettings):
     llm_provider: str = "gemini"          # swappable: gemini | groq | ...
     gemini_api_key: str = ""
     gemini_model: str = "gemini-2.5-flash"
+    groq_api_key: str = ""
+    groq_model: str = "llama-3.3-70b-versatile"
 
     # --- App --------------------------------------------------------------
     cors_origins: str = "*"               # comma-separated list in prod
+
+    @property
+    def llm_configured(self) -> bool:
+        """Whether the active provider has the credential it needs."""
+        if self.llm_provider == "gemini":
+            return bool(self.gemini_api_key)
+        if self.llm_provider == "groq":
+            return bool(self.groq_api_key)
+        return False
 
     @field_validator("database_url")
     @classmethod

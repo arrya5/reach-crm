@@ -88,6 +88,12 @@ export function Chat({ onOpenCampaign }: { onOpenCampaign: (id: number) => void 
 function Artifact({ action, onOpenCampaign }: { action: ChatAction; onOpenCampaign: (id: number) => void }) {
   const { tool, result } = action;
 
+  // The agent occasionally proposes an invalid filter; the DSL rejects it and
+  // the agent self-corrects. Render that recovery as a subtle note, not noise.
+  if (result?.error) {
+    return <div className="msg tool">⤷ {tool}: adjusted and retried</div>;
+  }
+
   if (tool === "preview_audience") {
     return (
       <div className="artifact">

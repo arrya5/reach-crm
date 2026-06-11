@@ -25,7 +25,8 @@ view**. Reach's bet: **the marketer talks to an agent, not a form.**
 
 > _"Win back customers who bought lipstick but haven't ordered in 60 days."_
 
-The agent (Google Gemini, tool-use loop) responds by actually doing the work:
+The agent (a **provider-agnostic** LLM tool-use loop — runs on **Groq Llama 3.3 70B** or
+**Google Gemini 2.5 Flash**) responds by actually doing the work:
 
 1. **Sizes the audience** — translates the goal into a structured filter and previews the count.
 2. **Drafts the copy** — on-brand, personalized (`{{name}}`, `{{city}}`, `{{last_item}}`).
@@ -153,12 +154,15 @@ the shape is unchanged (see §7).
   (`MAX_STEPS`) model→tools→model loop. Tools are the *only* way the model touches the CRM
   ([`llm/tools.py`](crm/app/llm/tools.py)).
 - **Provider-agnostic:** [`crm/app/llm/provider.py`](crm/app/llm/provider.py) defines a
-  normalized interface; `GeminiProvider` is the default (`gemini-2.5-flash`). Swapping to
-  Groq/OpenAI is one more class — the orchestration never changes.
+  normalized interface with **two implementations** — `GroqProvider` (Llama 3.3 70B) and
+  `GeminiProvider` (Gemini 2.5 Flash) — selected by the `LLM_PROVIDER` env var. The agent loop
+  is identical for both; the live demo runs on Groq. Adding OpenAI/etc. is one more class.
 - **Human-in-the-loop by construction:** there is **no `launch` tool**. The agent can only
   stage a `draft`; a human must approve the send in the UI. Safety isn't a prompt, it's the API surface.
-- **Graceful degradation:** if no `GEMINI_API_KEY` is set, the chat disables itself and the
-  whole dashboard still works — a free-tier rate limit can't break a demo.
+- **Graceful degradation:** if the active provider has no key, the chat disables itself and the
+  whole dashboard still works — a free-tier rate limit can't break a demo. (This swappability
+  earned its keep: when Gemini's free tier blocked generation for our project, flipping
+  `LLM_PROVIDER=groq` was the only change needed.)
 
 > _AI-native workflow:_ this project itself was built with an AI coding agent — used to
 > scaffold the services, generate the Filter-DSL compiler and the idempotent receipt handler,
@@ -178,7 +182,7 @@ cd channel-service && python -m venv .venv && .venv/Scripts/pip install -r requi
 
 # 2) CRM  (terminal B) — defaults to SQLite, no DB setup needed
 cd crm && python -m venv .venv && .venv/Scripts/pip install -r requirements.txt
-copy .env.example .env          # then add your GEMINI_API_KEY for the chat
+copy .env.example .env          # then add an LLM key for the chat (see below)
 .venv/Scripts/python -m app.seed          # ~1,000 customers + ~5,000 orders
 .venv/Scripts/uvicorn app.main:app --port 8000
 
@@ -186,7 +190,9 @@ copy .env.example .env          # then add your GEMINI_API_KEY for the chat
 cd web && npm install && npm run dev       # http://localhost:5173
 ```
 
-Get a free Gemini key at https://aistudio.google.com/apikey and put it in `crm/.env`.
+**LLM key** (for the chat — the dashboard works without it). Pick one in `crm/.env`:
+- **Groq** (used in the live demo): `LLM_PROVIDER=groq`, `GROQ_API_KEY=...` — free key at https://console.groq.com/keys
+- **Gemini**: `LLM_PROVIDER=gemini`, `GEMINI_API_KEY=...` — free key at https://aistudio.google.com/apikey
 
 **Or with Docker** (Postgres + both services): `docker compose up --build`, then
 `docker compose exec crm python -m app.seed`.
@@ -216,6 +222,6 @@ recipients, callbacks playing out in seconds. The code is structured so the *sha
 ## 8. Tech stack
 
 **Backend:** FastAPI · SQLAlchemy 2 (async) · Pydantic · httpx · Postgres/SQLite ·
-google-genai (Gemini 2.5 Flash) · pytest.
+LLM: Groq (Llama 3.3 70B) or Google Gemini 2.5 Flash, behind one swappable interface · pytest.
 **Frontend:** React 18 · Vite · TypeScript · Recharts.
 **Deploy:** Vercel (web) · Render (both services + Postgres).

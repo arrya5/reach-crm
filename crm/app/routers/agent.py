@@ -15,16 +15,16 @@ router = APIRouter(prefix="/agent", tags=["agent"])
 @router.get("/health")
 async def agent_health():
     """Lets the UI disable the chat gracefully when no LLM key is configured."""
-    return {"llm_provider": settings.llm_provider, "configured": bool(settings.gemini_api_key)}
+    return {"llm_provider": settings.llm_provider, "configured": settings.llm_configured}
 
 
 @router.post("/chat", response_model=ChatOut)
 async def chat(body: ChatIn, session: AsyncSession = Depends(get_session)):
-    if not settings.gemini_api_key:
+    if not settings.llm_configured:
         raise HTTPException(
             503,
-            "LLM not configured. Set GEMINI_API_KEY to enable the agent. "
-            "(The dashboard works without it.)",
+            f"LLM not configured. Set the API key for provider '{settings.llm_provider}' "
+            "to enable the agent. (The dashboard works without it.)",
         )
     result = await run_agent(session, body.message, body.conversation_id)
     return ChatOut(**result)

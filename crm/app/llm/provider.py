@@ -7,6 +7,7 @@ is a matter of writing one more ``LLMProvider`` — the orchestration never chan
 from __future__ import annotations
 
 import asyncio
+import json
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import Any
@@ -130,7 +131,87 @@ class GeminiProvider(LLMProvider):
         return result
 
 
+class GroqProvider(LLMProvider):
+    """Groq via its OpenAI-compatible Chat Completions API (default: Llama 3.3 70B).
+
+    Demonstrates the point of the provider abstraction: the agent loop is
+    unchanged — only this adapter, translating our normalized turns/tools to and
+    from the OpenAI tool-calling shape, differs from ``GeminiProvider``.
+    """
+
+    URL = "https://api.groq.com/openai/v1/chat/completions"
+
+    def __init__(self) -> None:
+        self._key = settings.groq_api_key
+        self._model = settings.groq_model
+
+    def _to_messages(self, system: str, history: list[Turn]) -> list[dict]:
+        messages: list[dict] = [{"role": "system", "content": system}]
+        # OpenAI-style tool messages must reference the assistant's tool_call id,
+        # so we mint deterministic ids and pair them with the tool turns that
+        # immediately follow (same order the agent appends them).
+        pending_ids: list[str] = []
+        for turn in history:
+            if turn.role == "user":
+                messages.append({"role": "user", "content": turn.text})
+            elif turn.role == "model":
+                msg: dict = {"role": "assistant", "content": turn.text or None}
+                if turn.tool_calls:
+                    pending_ids = [f"call_{i}" for i in range(len(turn.tool_calls))]
+                    msg["tool_calls"] = [
+                        {
+                            "id": pending_ids[i], "type": "function",
+                            "function": {"name": c.name, "arguments": json.dumps(c.args)},
+                        }
+                        for i, c in enumerate(turn.tool_calls)
+                    ]
+                messages.append(msg)
+            elif turn.role == "tool":
+                call_id = pending_ids.pop(0) if pending_ids else "call_0"
+                messages.append({
+                    "role": "tool", "tool_call_id": call_id,
+                    "content": json.dumps(turn.tool_result),
+                })
+        return messages
+
+    def _to_tools(self, tools: list[ToolSpec]) -> list[dict]:
+        return [
+            {"type": "function",
+             "function": {"name": t.name, "description": t.description, "parameters": t.parameters}}
+            for t in tools
+        ]
+
+    async def generate(
+        self, system: str, history: list[Turn], tools: list[ToolSpec]
+    ) -> LLMResult:
+        import httpx
+
+        body = {
+            "model": self._model,
+            "messages": self._to_messages(system, history),
+            "tools": self._to_tools(tools),
+            "tool_choice": "auto",
+            "temperature": 0.4,
+        }
+        async with httpx.AsyncClient(timeout=60) as client:
+            resp = await client.post(
+                self.URL, json=body,
+                headers={"Authorization": f"Bearer {self._key}"},
+            )
+            resp.raise_for_status()
+            message = resp.json()["choices"][0]["message"]
+
+        result = LLMResult(text=message.get("content") or "")
+        for call in message.get("tool_calls") or []:
+            fn = call["function"]
+            args = json.loads(fn.get("arguments") or "{}")
+            result.tool_calls.append(ToolCall(name=fn["name"], args=args))
+        return result
+
+
 def get_provider() -> LLMProvider:
     if settings.llm_provider == "gemini":
         return GeminiProvider()
+    if settings.llm_provider == "groq":
+        return GroqProvider()
     raise ValueError(f"unsupported llm_provider: {settings.llm_provider}")
