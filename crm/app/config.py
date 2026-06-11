@@ -35,6 +35,10 @@ class Settings(BaseSettings):
 
     # --- App --------------------------------------------------------------
     cors_origins: str = "*"               # comma-separated list in prod
+    # When true, the CRM seeds demo data on startup *if the DB is empty*
+    # (idempotent). Handy for one-click deploys where you can't reach the
+    # managed DB from your machine to seed it manually.
+    seed_on_startup: bool = False
 
     @property
     def llm_configured(self) -> bool:

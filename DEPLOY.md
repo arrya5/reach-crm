@@ -20,10 +20,14 @@ Easiest path uses the included [`render.yaml`](render.yaml) blueprint:
    - **reach-crm:** `DATABASE_URL` (Neon string, or auto-wired if using Render's DB), and an
      LLM provider + key: `LLM_PROVIDER=groq` + `GROQ_API_KEY` (free at
      https://console.groq.com/keys), **or** `LLM_PROVIDER=gemini` + `GEMINI_API_KEY`.
+   - **reach-crm** also: `SEED_ON_STARTUP=true` (auto-seeds demo data on first
+     boot; idempotent, so it skips on later restarts). This avoids needing to
+     reach the DB from your own machine.
 4. After both are live, set on **reach-crm** and redeploy:
    - `CHANNEL_SERVICE_URL = https://reach-channel.onrender.com`
    - `CRM_PUBLIC_URL      = https://reach-crm.onrender.com`
-5. Seed once: Render → reach-crm → **Shell** → `python -m app.seed`.
+5. Data is seeded automatically via `SEED_ON_STARTUP`. (Alternatively, unset it
+   and run `python -m app.seed` from Render → reach-crm → **Shell**.)
 
 > Render free web services sleep when idle; the first request after a nap takes ~30s to wake.
 > Hit the CRM URL once before demoing.

@@ -18,6 +18,9 @@ from .routers import agent, analytics, campaigns, customers, segments, webhooks
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     await init_db()
+    if settings.seed_on_startup:
+        from .seed import seed  # idempotent: skips if data already present
+        await seed()
     yield
 
 

@@ -19,7 +19,16 @@ class Base(DeclarativeBase):
     pass
 
 
-engine = create_async_engine(settings.database_url, echo=False, future=True)
+# asyncpg doesn't read libpq's ``sslmode`` from the URL (we strip it in config),
+# so managed Postgres like Neon — which *requires* TLS — needs SSL enabled via
+# connect_args. SQLite needs none of this.
+_connect_args: dict = {}
+if settings.database_url.startswith("postgresql+asyncpg"):
+    _connect_args["ssl"] = True
+
+engine = create_async_engine(
+    settings.database_url, echo=False, future=True, connect_args=_connect_args
+)
 SessionLocal = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
 
 

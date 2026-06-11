@@ -50,3 +50,6 @@ services:
         sync: false
       - key: CORS_ORIGINS
         value: "*"
+      # Auto-seed demo data on first boot (idempotent — skips if DB non-empty).
+      - key: SEED_ON_STARTUP
+        value: "true"
