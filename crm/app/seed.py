@@ -134,6 +134,12 @@ async def seed(n_customers: int = 1000) -> None:
         print(f"Seeded {len(customers)} customers and {total_orders} orders.")
 
 
+async def _main() -> None:
+    try:
+        await seed()
+    finally:
+        await engine.dispose()  # dispose within the same loop for a clean exit
+
+
 if __name__ == "__main__":
-    asyncio.run(seed())
-    asyncio.run(engine.dispose())
+    asyncio.run(_main())
