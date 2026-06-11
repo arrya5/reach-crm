@@ -26,10 +26,5 @@ async def chat(body: ChatIn, session: AsyncSession = Depends(get_session)):
             f"LLM not configured. Set the API key for provider '{settings.llm_provider}' "
             "to enable the agent. (The dashboard works without it.)",
         )
-    try:
-        result = await run_agent(session, body.message, body.conversation_id)
-    except Exception as exc:  # TEMP diagnostic: surface the real error
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(500, f"agent error: {type(exc).__name__}: {exc}")
+    result = await run_agent(session, body.message, body.conversation_id)
     return ChatOut(**result)
