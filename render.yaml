@@ -1,14 +1,7 @@
-# Render Blueprint — one-click deploy of the two backend services + Postgres.
+# Render Blueprint — one-click deploy of the two backend services.
+# Database is external (Neon) so it doesn't expire like Render's free Postgres;
+# paste the Neon connection string into DATABASE_URL when prompted.
 # (Deploy the frontend separately on Vercel; point VITE_API_BASE at the CRM URL.)
-#
-# After first deploy, run the seed once from the CRM service shell:
-#   python -m app.seed
-databases:
-  - name: reach-db
-    plan: free
-    databaseName: reach
-    user: reach
-
 services:
   - type: web
     name: reach-channel
@@ -27,10 +20,10 @@ services:
     rootDir: crm
     plan: free
     envVars:
+      # Paste your Neon connection string (postgresql://...); the app rewrites
+      # it for the async driver and enables TLS automatically.
       - key: DATABASE_URL
-        fromDatabase:
-          name: reach-db
-          property: connectionString
+        sync: false
       # Set these to the full public https URLs after the first deploy, e.g.
       #   CHANNEL_SERVICE_URL = https://reach-channel.onrender.com
       #   CRM_PUBLIC_URL      = https://reach-crm.onrender.com

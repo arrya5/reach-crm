@@ -14,7 +14,7 @@ Free tiers everywhere. ~20 minutes end to end.
 Easiest path uses the included [`render.yaml`](render.yaml) blueprint:
 1. Push this repo to GitHub.
 2. Render → **New → Blueprint** → pick the repo. It creates `reach-crm` + `reach-channel`
-   (and a Postgres if you didn't make one on Neon).
+   (the database is external on Neon — paste its URL into `DATABASE_URL` below).
 3. Set env vars when prompted:
    - **Both services:** `WEBHOOK_SECRET` = your shared secret.
    - **reach-crm:** `DATABASE_URL` (Neon string, or auto-wired if using Render's DB), and an
