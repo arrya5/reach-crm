@@ -53,6 +53,8 @@ export const api = {
   campaignStats: (id: number) => req<CampaignStats>(`/campaigns/${id}/stats`),
   communications: (id: number) => req<Communication[]>(`/campaigns/${id}/communications?limit=200`),
   launch: (id: number) => req<{ campaign_id: number; recipients: number }>(`/campaigns/${id}/launch`, { method: "POST" }),
+  deleteCampaign: (id: number) => req<{ deleted: number }>(`/campaigns/${id}`, { method: "DELETE" }),
+  deleteSegment: (id: number) => req<{ deleted: number }>(`/segments/${id}`, { method: "DELETE" }),
   chat: (message: string, conversation_id: string | null) =>
     req<ChatResponse>("/agent/chat", { method: "POST", body: JSON.stringify({ message, conversation_id }) }),
 };

@@ -8,12 +8,12 @@ real send.
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from ..db import get_session
-from ..models import Campaign, CampaignStatus, Segment
+from ..models import Campaign, CampaignStatus, Communication, CommunicationEvent, Segment
 from ..schemas import CampaignCreateIn, CampaignOut
 from ..services.analytics import campaign_stats
 from ..services.sender import launch_campaign
@@ -75,3 +75,24 @@ async def stats(campaign_id: int, session: AsyncSession = Depends(get_session)):
     if result is None:
         raise HTTPException(404, "campaign not found")
     return result
+
+
+@router.delete("/{campaign_id}")
+async def delete_campaign(campaign_id: int, session: AsyncSession = Depends(get_session)):
+    """Delete a campaign and its communications/events (cascade)."""
+    campaign = await session.get(Campaign, campaign_id)
+    if campaign is None:
+        raise HTTPException(404, "campaign not found")
+    comm_ids = list((await session.scalars(
+        select(Communication.id).where(Communication.campaign_id == campaign_id)
+    )).all())
+    if comm_ids:
+        await session.execute(
+            delete(CommunicationEvent).where(CommunicationEvent.communication_id.in_(comm_ids))
+        )
+        await session.execute(
+            delete(Communication).where(Communication.campaign_id == campaign_id)
+        )
+    await session.delete(campaign)
+    await session.commit()
+    return {"deleted": campaign_id}

@@ -9,7 +9,7 @@ from __future__ import annotations
 import json
 
 import httpx
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..config import settings
@@ -64,6 +64,12 @@ async def launch_campaign(session: AsyncSession, campaign: Campaign) -> dict:
 
     last_items = await _last_items(session, [c.id for c in customers])
 
+    # Clear any communications from a previous failed attempt so re-launching a
+    # failed campaign is idempotent (no duplicate sends).
+    await session.execute(
+        delete(Communication).where(Communication.campaign_id == campaign.id)
+    )
+
     campaign.status = CampaignStatus.launching.value
     comms: list[Communication] = []
     for cust in customers:
@@ -81,7 +87,15 @@ async def launch_campaign(session: AsyncSession, campaign: Campaign) -> dict:
     for c in comms:
         await session.refresh(c)
 
-    await _dispatch(campaign, comms)
+    # If the channel service is cold (free tier), the first dispatch can take
+    # ~50s to wake it. On failure we mark the campaign failed (not stuck in
+    # 'launching') so it stays re-launchable and doesn't show as forever-live.
+    try:
+        await _dispatch(campaign, comms)
+    except Exception:
+        campaign.status = CampaignStatus.failed.value
+        await session.commit()
+        raise
 
     campaign.status = CampaignStatus.sent.value
     await session.commit()
@@ -104,7 +118,8 @@ async def _dispatch(campaign: Campaign, comms: list[Communication]) -> None:
         "Content-Type": "application/json",
         "X-Signature": sign(raw, settings.webhook_secret),
     }
-    async with httpx.AsyncClient(timeout=30) as client:
+    # Generous timeout: a cold (spun-down) channel service can take ~50s to wake.
+    async with httpx.AsyncClient(timeout=90) as client:
         resp = await client.post(
             f"{settings.channel_service_url}/v1/send", content=raw, headers=headers
         )

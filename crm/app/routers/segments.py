@@ -11,7 +11,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..db import get_session
-from ..models import Customer, Segment
+from ..models import Campaign, Customer, Segment
 from ..schemas import (
     SegmentCreateIn,
     SegmentOut,
@@ -69,3 +69,18 @@ async def get_segment(segment_id: int, session: AsyncSession = Depends(get_sessi
     if seg is None:
         raise HTTPException(404, "segment not found")
     return seg
+
+
+@router.delete("/{segment_id}")
+async def delete_segment(segment_id: int, session: AsyncSession = Depends(get_session)):
+    seg = await session.get(Segment, segment_id)
+    if seg is None:
+        raise HTTPException(404, "segment not found")
+    in_use = await session.scalar(
+        select(func.count(Campaign.id)).where(Campaign.segment_id == segment_id)
+    )
+    if in_use:
+        raise HTTPException(409, f"segment is used by {in_use} campaign(s); delete those first")
+    await session.delete(seg)
+    await session.commit()
+    return {"deleted": segment_id}

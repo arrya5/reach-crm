@@ -5,6 +5,14 @@ export function Segments() {
   const [rows, setRows] = useState<Segment[]>([]);
   useEffect(() => { api.segments().then(setRows).catch(() => {}); }, []);
 
+  async function remove(s: Segment) {
+    if (!confirm(`Delete segment "${s.name}"?`)) return;
+    try {
+      await api.deleteSegment(s.id);
+      setRows((r) => r.filter((x) => x.id !== s.id));
+    } catch (e) { alert((e as Error).message); }
+  }
+
   return (
     <div>
       <h1 className="page-title">Segments</h1>
@@ -14,7 +22,7 @@ export function Segments() {
           <div className="empty">No segments yet. The AI Copilot creates these as it works.</div>
         ) : (
           <table>
-            <thead><tr><th>#</th><th>Name</th><th>Size</th><th>Definition</th><th>By</th></tr></thead>
+            <thead><tr><th>#</th><th>Name</th><th>Size</th><th>Definition</th><th>By</th><th></th></tr></thead>
             <tbody>
               {rows.map((s) => (
                 <tr key={s.id}>
@@ -23,6 +31,9 @@ export function Segments() {
                   <td>{s.est_count.toLocaleString()}</td>
                   <td><code className="k">{describe(s.definition)}</code></td>
                   <td><span className="badge b-draft">{s.created_via}</span></td>
+                  <td style={{ textAlign: "right" }}>
+                    <button className="btn ghost sm" onClick={() => remove(s)}>Delete</button>
+                  </td>
                 </tr>
               ))}
             </tbody>

@@ -16,26 +16,38 @@ export function Campaigns({ focusId, clearFocus }: { focusId: number | null; cle
 
 function CampaignList({ onSelect }: { onSelect: (id: number) => void }) {
   const { data: campaigns } = usePolling(() => api.campaigns(), 4000);
+  const [hidden, setHidden] = useState<Set<number>>(new Set());
+
+  async function remove(c: Campaign) {
+    if (!confirm(`Delete campaign "${c.name}"? This removes its communications too.`)) return;
+    setHidden((h) => new Set(h).add(c.id));
+    try { await api.deleteCampaign(c.id); } catch (e) { alert((e as Error).message); }
+  }
+
+  const rows = (campaigns ?? []).filter((c) => !hidden.has(c.id));
 
   return (
     <div>
       <h1 className="page-title">Campaigns</h1>
       <p className="page-sub">Every campaign the copilot staged. Open one to watch its live delivery funnel.</p>
       <div className="card">
-        {!campaigns?.length ? (
+        {!rows.length ? (
           <div className="empty">No campaigns yet. Ask the AI Copilot to create one.</div>
         ) : (
           <table>
             <thead><tr><th>#</th><th>Name</th><th>Channel</th><th>Status</th><th>Created</th><th></th></tr></thead>
             <tbody>
-              {campaigns.map((c: Campaign) => (
+              {rows.map((c: Campaign) => (
                 <tr key={c.id}>
                   <td className="muted">{c.id}</td>
                   <td>{c.name}</td>
                   <td>{c.channel}</td>
                   <td><StatusBadge status={c.status} /></td>
                   <td className="muted">{new Date(c.created_at).toLocaleString()}</td>
-                  <td><button className="btn ghost sm" onClick={() => onSelect(c.id)}>Open →</button></td>
+                  <td style={{ textAlign: "right", whiteSpace: "nowrap" }}>
+                    <button className="btn ghost sm" onClick={() => onSelect(c.id)}>Open →</button>
+                    <button className="btn ghost sm" style={{ marginLeft: 8 }} onClick={() => remove(c)}>Delete</button>
+                  </td>
                 </tr>
               ))}
             </tbody>
