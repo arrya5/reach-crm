@@ -31,6 +31,8 @@ view**. Reach's bet: **the marketer talks to an agent, not a form.**
 The agent (a **provider-agnostic** LLM tool-use loop — runs on **Groq Llama 3.3 70B** or
 **Google Gemini 2.5 Flash**) responds by actually doing the work:
 
+0. **Ingest** — customers + orders come in via a seed of realistic SUGAR data *and* a runtime
+   ingest API (`POST /ingest`) with a CSV/JSON upload on the Customers page.
 1. **Sizes the audience** — translates the goal into a structured filter and previews the count.
 2. **Drafts the copy** — on-brand, personalized (`{{name}}`, `{{city}}`, `{{last_item}}`).
 3. **Recommends a channel** — WhatsApp / SMS / Email / RCS, with a reason.

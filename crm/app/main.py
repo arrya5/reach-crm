@@ -12,7 +12,9 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .config import settings
 from .db import init_db
-from .routers import agent, analytics, campaigns, customers, segments, webhooks
+from .routers import (
+    agent, analytics, campaigns, customers, ingest, segments, webhooks,
+)
 
 
 @asynccontextmanager
@@ -33,7 +35,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-for r in (customers.router, segments.router, campaigns.router,
+for r in (customers.router, ingest.router, segments.router, campaigns.router,
           analytics.router, webhooks.router, agent.router):
     app.include_router(r)
 

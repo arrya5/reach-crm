@@ -40,6 +40,10 @@ export interface Communication {
 export interface Segment {
   id: number; name: string; definition: any; est_count: number; created_via: string; created_at: string;
 }
+export interface IngestResult {
+  customers_added: number; customers_skipped: number;
+  orders_added: number; orders_skipped: number;
+}
 export interface ChatAction { tool: string; args: Record<string, any>; result: any; }
 export interface ChatResponse { conversation_id: string; reply: string; actions: ChatAction[]; }
 
@@ -48,6 +52,8 @@ export const api = {
   health: () => req<{ llm_provider: string; configured: boolean }>("/agent/health"),
   customerStats: () => req<CustomerStats>("/customers/stats"),
   customers: (limit = 50, offset = 0) => req<Customer[]>(`/customers?limit=${limit}&offset=${offset}`),
+  ingest: (payload: { customers?: any[]; orders?: any[] }) =>
+    req<IngestResult>("/ingest", { method: "POST", body: JSON.stringify(payload) }),
   segments: () => req<Segment[]>("/segments"),
   campaigns: () => req<Campaign[]>("/campaigns"),
   campaignStats: (id: number) => req<CampaignStats>(`/campaigns/${id}/stats`),

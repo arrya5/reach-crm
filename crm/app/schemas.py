@@ -22,6 +22,37 @@ class CustomerOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+# --- ingestion ------------------------------------------------------------
+
+class CustomerImport(BaseModel):
+    name: str
+    email: str
+    phone: str = ""
+    city: str = "Unknown"
+    gender: str = "other"
+    tags: list[str] = []
+
+
+class OrderImport(BaseModel):
+    customer_email: str            # natural key linking an order to its customer
+    amount: float
+    category: str
+    product_name: str = ""
+    ordered_at: datetime | None = None
+
+
+class IngestRequest(BaseModel):
+    customers: list[CustomerImport] = []
+    orders: list[OrderImport] = []
+
+
+class IngestResult(BaseModel):
+    customers_added: int
+    customers_skipped: int       # email already existed
+    orders_added: int
+    orders_skipped: int          # no matching customer email
+
+
 # --- segments -------------------------------------------------------------
 
 class SegmentPreviewIn(BaseModel):
