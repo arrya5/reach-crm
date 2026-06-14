@@ -1,12 +1,14 @@
 import { useState } from "react";
+import { Overview } from "./views/Overview";
 import { Chat } from "./views/Chat";
 import { Campaigns } from "./views/Campaigns";
 import { Customers } from "./views/Customers";
 import { Segments } from "./views/Segments";
 
-type View = "chat" | "campaigns" | "customers" | "segments";
+type View = "overview" | "chat" | "campaigns" | "customers" | "segments";
 
 const NAV: { key: View; label: string; icon: string }[] = [
+  { key: "overview", label: "Home", icon: "🏠" },
   { key: "chat", label: "AI Copilot", icon: "✨" },
   { key: "campaigns", label: "Campaigns", icon: "📣" },
   { key: "segments", label: "Segments", icon: "🎯" },
@@ -14,11 +16,12 @@ const NAV: { key: View; label: string; icon: string }[] = [
 ];
 
 export function App() {
-  const [view, setView] = useState<View>("chat");
-  // Lets the Chat view deep-link into a campaign it just created.
+  const [view, setView] = useState<View>("overview");
   const [campaignFocus, setCampaignFocus] = useState<number | null>(null);
+  const [chatSeed, setChatSeed] = useState<string | null>(null);
 
   const goCampaign = (id: number) => { setCampaignFocus(id); setView("campaigns"); };
+  const goChat = (seed?: string) => { setChatSeed(seed ?? null); setView("chat"); };
 
   return (
     <div className="app">
@@ -45,7 +48,8 @@ export function App() {
       </aside>
 
       <main className="main">
-        {view === "chat" && <Chat onOpenCampaign={goCampaign} />}
+        {view === "overview" && <Overview onStartChat={goChat} onOpenCampaign={goCampaign} />}
+        {view === "chat" && <Chat onOpenCampaign={goCampaign} seed={chatSeed} />}
         {view === "campaigns" && <Campaigns focusId={campaignFocus} clearFocus={() => setCampaignFocus(null)} />}
         {view === "segments" && <Segments />}
         {view === "customers" && <Customers />}

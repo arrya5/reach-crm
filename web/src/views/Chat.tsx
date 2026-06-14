@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { api, ChatAction } from "../api";
+import { api, ChatAction, CustomerStats } from "../api";
 
 interface Bubble {
   role: "user" | "bot" | "tool" | "artifact";
@@ -7,21 +7,24 @@ interface Bubble {
   action?: ChatAction;
 }
 
-const SUGGESTIONS = [
-  "Win back customers who bought lipstick but haven't ordered in 60 days",
-  "Find my top spenders in Mumbai and offer them early access to a new fragrance",
-  "Re-engage one-time buyers with a skincare bundle over WhatsApp",
+const SUGGESTIONS: { icon: string; title: string; text: string }[] = [
+  { icon: "💄", title: "Win back lapsed buyers", text: "Win back customers who bought lipstick but haven't ordered in 60 days" },
+  { icon: "⭐", title: "Reward your VIPs", text: "Find my top spenders in Mumbai and offer them early access to a new fragrance" },
+  { icon: "🔁", title: "Re-engage one-timers", text: "Re-engage one-time buyers with a skincare bundle over WhatsApp" },
 ];
 
-export function Chat({ onOpenCampaign }: { onOpenCampaign: (id: number) => void }) {
+export function Chat({ onOpenCampaign, seed }: { onOpenCampaign: (id: number) => void; seed?: string | null }) {
   const [bubbles, setBubbles] = useState<Bubble[]>([]);
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState(seed ?? "");
   const [convId, setConvId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [configured, setConfigured] = useState<boolean | null>(null);
+  const [stats, setStats] = useState<CustomerStats | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { api.health().then((h) => setConfigured(h.configured)).catch(() => setConfigured(false)); }, []);
+  useEffect(() => { api.customerStats().then(setStats).catch(() => {}); }, []);
+  useEffect(() => { if (seed) setInput(seed); }, [seed]);
   useEffect(() => { scrollRef.current?.scrollTo({ top: 1e9, behavior: "smooth" }); }, [bubbles, busy]);
 
   async function send(message: string) {
@@ -44,17 +47,32 @@ export function Chat({ onOpenCampaign }: { onOpenCampaign: (id: number) => void 
 
   return (
     <div className="chat">
-      <h1 className="page-title">AI Copilot</h1>
-      <p className="page-sub">
-        Describe a goal in plain English. I’ll size the audience, draft the copy, pick a channel, and stage a campaign for your approval.
-      </p>
-
       <div className="chat-scroll" ref={scrollRef}>
         {bubbles.length === 0 && (
-          <div className="suggestions">
-            {SUGGESTIONS.map((s) => (
-              <button key={s} onClick={() => send(s)}>{s}</button>
-            ))}
+          <div className="chat-hero">
+            <div className="cta-eyebrow">✨ AI MARKETING COPILOT</div>
+            <h1 className="hero-title">Turn a goal into a launched<br />campaign — just by asking.</h1>
+            <p className="hero-sub">
+              I size the audience, draft on-brand copy, recommend a channel, and stage the campaign for your approval.
+            </p>
+            {stats && (
+              <div className="hero-stats">
+                <span><b>{stats.customers.toLocaleString()}</b> shoppers</span>
+                <i />
+                <span><b>{stats.orders.toLocaleString()}</b> orders</span>
+                <i />
+                <span><b>₹{Math.round(stats.lifetime_revenue / 1e5)}L</b> lifetime revenue</span>
+              </div>
+            )}
+            <div className="hero-cards">
+              {SUGGESTIONS.map((s) => (
+                <button key={s.title} className="hero-card" onClick={() => send(s.text)}>
+                  <div className="hero-card-icon">{s.icon}</div>
+                  <div className="hero-card-title">{s.title}</div>
+                  <div className="hero-card-text">{s.text}</div>
+                </button>
+              ))}
+            </div>
           </div>
         )}
         {bubbles.map((b, i) =>
