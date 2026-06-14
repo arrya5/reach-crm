@@ -51,7 +51,7 @@ export function Chat({ onOpenCampaign, seed }: { onOpenCampaign: (id: number) =>
         {bubbles.length === 0 && (
           <div className="chat-hero">
             <div className="cta-eyebrow">✨ AI MARKETING COPILOT</div>
-            <h1 className="hero-title">Turn a goal into a launched<br />campaign — just by asking.</h1>
+            <h1 className="hero-title">Turn a goal into a launched campaign<br /><span className="accent">just by asking.</span></h1>
             <p className="hero-sub">
               I size the audience, draft on-brand copy, recommend a channel, and stage the campaign for your approval.
             </p>

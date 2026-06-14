@@ -59,8 +59,8 @@ function CampaignList({ onSelect }: { onSelect: (id: number) => void }) {
 }
 
 const FUNNEL_COLORS: Record<string, string> = {
-  sent: "#b14cff", delivered: "#36d399", opened: "#cda6ff",
-  read: "#a78bfa", clicked: "#fbbd23", converted: "#ff2e74",
+  sent: "#8b4cf0", delivered: "#12a673", opened: "#b07cf0",
+  read: "#cba6f5", clicked: "#e0a01a", converted: "#ff1f6b",
 };
 
 function CampaignDetail({ id, onBack }: { id: number; onBack: () => void }) {
@@ -118,10 +118,10 @@ function CampaignDetail({ id, onBack }: { id: number; onBack: () => void }) {
           <h4 className="muted" style={{ marginTop: 0 }}>Delivery & engagement funnel</h4>
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={chartData} margin={{ top: 8, right: 8, left: -18, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#2a2540" vertical={false} />
-              <XAxis dataKey="stage" stroke="#9a93b3" fontSize={12} />
-              <YAxis stroke="#9a93b3" fontSize={12} />
-              <Tooltip contentStyle={{ background: "#16131f", border: "1px solid #2a2540", borderRadius: 10 }} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#e7ded0" vertical={false} />
+              <XAxis dataKey="stage" stroke="#8c8275" fontSize={12} />
+              <YAxis stroke="#8c8275" fontSize={12} />
+              <Tooltip contentStyle={{ background: "#fff", border: "1px solid #e7ded0", borderRadius: 10, color: "#1c1712" }} />
               <Bar dataKey="value" radius={[6, 6, 0, 0]}>
                 {chartData.map((d) => <Cell key={d.stage} fill={FUNNEL_COLORS[d.stage]} />)}
               </Bar>
