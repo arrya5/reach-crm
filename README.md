@@ -1,5 +1,7 @@
 # Reach — an AI-native Mini CRM for reaching shoppers
 
+[![CI](https://github.com/arrya5/reach-crm/actions/workflows/ci.yml/badge.svg)](https://github.com/arrya5/reach-crm/actions/workflows/ci.yml)
+
 > Built for the Xeno engineering take-home. **Reach** lets a beauty brand's marketer
 > describe a goal in plain English and have an AI copilot turn it into a launched,
 > tracked campaign — sizing the audience, drafting the copy, picking the channel,
@@ -8,12 +10,11 @@
 > Brand persona: **SUGAR Cosmetics** (a D2C beauty brand). All data is **simulated**;
 > this is an unofficial demo and is **not affiliated with SUGAR Cosmetics**.
 
-- **Live app:** https://reach-crm.vercel.app
-- **CRM API:** https://reach-crm.onrender.com · **Channel service:** https://reach-channel.onrender.com
-- **Walkthrough video:** _<add link after recording>_
+- **Frontend:** https://reach-crm.vercel.app _(the Render free-tier backends have been spun
+  down since the original demo; see §6 to run the full stack locally in a few minutes)_
 
-> ⏳ The backend runs on Render's free tier, which **sleeps after ~15 min idle** — the first
-> request may take ~50s to wake. Just load the app once and give it a moment.
+> ⏳ If a future redeploy sleeps instead of being down entirely: Render's free tier
+> **sleeps after ~15 min idle** — the first request may take ~50s to wake.
 
 | AI Copilot (chat-first) | Live campaign funnel |
 |---|---|
